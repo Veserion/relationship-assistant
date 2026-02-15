@@ -13,7 +13,7 @@ export interface Note {
   id: number;
   user_id: number;
   text: string;
-  category: 'wish' | 'idea' | 'preference' | 'memory';
+  category: 'wish' | 'idea' | 'preference' | 'memory' | 'gift' | 'attention' | 'date_idea' | 'place' | 'other';
   priority: number;
   created_at: string;
 }

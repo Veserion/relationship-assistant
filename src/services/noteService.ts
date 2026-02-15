@@ -1,6 +1,18 @@
 import { getDb } from '../db/index.js';
 import type { Note } from '../types.js';
 
+export const CATEGORY_NAMES: Record<string, string> = {
+  gift: '🎁 Подарки',
+  attention: '🥰 Знаки внимания',
+  date_idea: '💡 Идеи для свиданий',
+  place: '📍 Места',
+  wish: '✨ Другое/Желания',
+  idea: '💡 Идеи',
+  preference: '❤️ Предпочтения',
+  memory: '📸 Воспоминания',
+  other: '✨ Другое'
+};
+
 export const CATEGORIES = [
   'wish',
   'idea',

@@ -1,6 +1,6 @@
 import type { Telegraf } from 'telegraf';
 import { roleGuard } from '../middleware/roleGuard.js';
-import { getNotesByUser } from '../services/noteService.js';
+import { getNotesByUser, CATEGORY_NAMES } from '../services/noteService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 
@@ -32,7 +32,6 @@ export async function handleMyNotes(ctx: BotContext) {
     return;
   }
 
-  // Group by category
   const grouped: Record<string, typeof notes> = {};
   notes.forEach(note => {
     const cat = note.category || 'wish';
@@ -40,24 +39,12 @@ export async function handleMyNotes(ctx: BotContext) {
     grouped[cat].push(note);
   });
 
-  const categoryNames: Record<string, string> = {
-    gift: '🎁 Подарки',
-    attention: '🥰 Знаки внимания',
-    date_idea: '💡 Идеи для свиданий',
-    place: '📍 Места',
-    wish: '✨ Другое/Желания',
-    idea: '💡 Идеи',
-    preference: '❤️ Предпочтения',
-    memory: '📸 Воспоминания',
-    other: '✨ Другое'
-  };
-
   let message = '<b>📝 Твои заметки:</b>\n\n';
   const buttons: any[] = [];
   let globalIndex = 1;
 
   for (const [cat, items] of Object.entries(grouped)) {
-    message += `<b>${categoryNames[cat] || cat}</b>\n`;
+    message += `<b>${CATEGORY_NAMES[cat] || cat}</b>\n`;
     const row: any[] = [];
     
     items.forEach((note) => {

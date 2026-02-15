@@ -13,7 +13,7 @@ export function initSchema(db: InstanceType<typeof Database>): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       text TEXT NOT NULL,
-      category TEXT NOT NULL CHECK(category IN ('wish', 'idea', 'preference', 'memory')) DEFAULT 'wish',
+      category TEXT NOT NULL CHECK(category IN ('wish', 'idea', 'preference', 'memory', 'gift', 'attention', 'date_idea', 'place', 'other')) DEFAULT 'wish',
       priority INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id)
@@ -42,5 +42,11 @@ export function initSchema(db: InstanceType<typeof Database>): void {
     CREATE INDEX IF NOT EXISTS idx_dates_owner ON important_dates(owner_id);
     CREATE INDEX IF NOT EXISTS idx_dates_date ON important_dates(date);
     CREATE INDEX IF NOT EXISTS idx_logs_reference ON reminder_logs(reference_id, reminder_type);
+
+    CREATE TABLE IF NOT EXISTS key_value (
+      key TEXT PRIMARY KEY,
+      value TEXT,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
   `);
 }

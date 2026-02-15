@@ -9,6 +9,7 @@ export const BTN = {
   ADD_DATE: '📅 Добавить дату',
   MY_DATES: '📆 Мои даты',
   PARTNER_WISHES: '💌 От второй половинки',
+  SEND_MESSAGE: '✉️ Написать',
 } as const;
 
 export function getCommandsKeyboard(role: 'OWNER' | 'PARTNER') {
@@ -16,12 +17,12 @@ export function getCommandsKeyboard(role: 'OWNER' | 'PARTNER') {
     return Markup.keyboard([
       [BTN.MAIN, BTN.HELP],
       [BTN.ADD_DATE, BTN.MY_DATES],
-      [BTN.PARTNER_WISHES],
+      [BTN.PARTNER_WISHES, BTN.SEND_MESSAGE],
     ]).resize();
   }
   return Markup.keyboard([
     [BTN.MAIN, BTN.HELP],
     [BTN.ADD_WISH, BTN.MY_NOTES],
-    [BTN.ADD_DATE],
+    [BTN.ADD_DATE, BTN.SEND_MESSAGE],
   ]).resize();
 }

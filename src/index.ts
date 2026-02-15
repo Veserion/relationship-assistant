@@ -7,7 +7,7 @@ import { migrateCategories } from './db/migrations.js';
 // Run migrations on startup
 migrateCategories();
 
-function main(): void {
+async function main(): Promise<void> {
   if (!config.botToken) {
     console.error('BOT_TOKEN is required. Copy .env.example to .env and fill it.');
     process.exit(1);
@@ -18,6 +18,12 @@ function main(): void {
   }
 
   const bot = createBot();
+
+  // Initialize Scheduler
+  // We need to pass the bot instance to the scheduler so it can send messages
+  const { SchedulerService } = await import('./services/scheduler.js');
+  const scheduler = new SchedulerService(bot);
+  scheduler.init();
 
   bot.launch().then(() => {
     console.log('Relationship Reminder Bot started.');

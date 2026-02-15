@@ -26,6 +26,9 @@ export async function checkGlobalNavigation(ctx: BotContext, text: string): Prom
           await handleMyNotes(ctx);
         }
         break;
+      case BTN.SEND_MESSAGE:
+        await ctx.scene.enter('SEND_MESSAGE');
+        break;
       case BTN.ADD_DATE:
         await ctx.scene.enter('ADD_DATE');
         break;

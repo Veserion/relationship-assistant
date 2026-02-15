@@ -1,0 +1,91 @@
+import { config } from '../config.js';
+import { createBot } from '../bot.js'; // We might need a singleton bot instance or pass it in
+import { getNotesForOwner, getNotesByUser } from './noteService.js';
+import { log } from '../logger.js';
+import { KV } from './kvService.js';
+import { Telegraf } from 'telegraf';
+import type { BotContext } from '../types.js';
+
+// We need a way to send messages. 
+// Since `createBot` returns a new instance, we should probably modify `bot.ts` to export a singleton 
+// or pass the bot instance to the scheduler. 
+// For now, let's assume we can create a lightweight instance just for sending, 
+// OR better: Scheduler attaches to the running bot. 
+// Refactoring `index.ts` to pass bot to scheduler init is best.
+
+export class ReminderService {
+  private bot: Telegraf<BotContext>;
+
+  constructor(bot: Telegraf<BotContext>) {
+    this.bot = bot;
+  }
+
+  async sendDailyCompliment() {
+    log.info('Sending daily compliment reminder');
+    // Logic: Just remind the owner to say something nice.
+    // Optionally: fetch a random "wish" from partner if category='attention' or 'wish'
+    // But user asked for "Reminder about nice words".
+    
+    // We can vary the message slightly so it's not boring
+    const messages = [
+      '🔔 Напоминание: Напиши что-нибудь приятное своей половинке прямо сейчас! 🥰',
+      '🔔 Время для нежностей! Отправь милое сообщение или позвони.',
+      '🔔 Маленькое напоминание: твоя половинка будет рада твоему вниманию ❤️',
+      '🔔 Как насчет комплимента? Самое время порадовать любимого человека!',
+    ];
+    const text = messages[Math.floor(Math.random() * messages.length)];
+    
+    await this.trySend(text);
+    KV.set('last_compliment_date', new Date().toISOString().split('T')[0]);
+  }
+
+  async sendWeeklyAttention() {
+    log.info('Sending weekly attention reminder');
+    const text = '🔔 Напоминание недели: Удели время качественному вниманию! \nМожет быть, маленький сюрприз или просто долгий разговор по душам? ✨';
+    await this.trySend(text);
+    KV.set('last_weekly_attention_date', new Date().toISOString());
+  }
+
+  async sendBiWeeklyDate() {
+    log.info('Sending bi-weekly date reminder');
+    
+    // Try to get idea from DB
+    const ideas = getNotesForOwner(config.ownerId).filter(n => n.category === 'date_idea');
+    let ideaText = '';
+    if (ideas.length > 0) {
+      const randomIdea = ideas[Math.floor(Math.random() * ideas.length)];
+      ideaText = `\n\n💡 Идея из ваших заметок:\n"${randomIdea.text}"`;
+    } else {
+        ideaText = '\n\n💡 (Добавьте идеи для свиданий в бота, и я буду их подсказывать!)';
+    }
+
+    const text = `🔔 Напоминание: Пора на свидание! 🍷\nПопробуйте организовать что-то особенное на этих выходных.${ideaText}`;
+    await this.trySend(text);
+    KV.set('last_date_reminder_date', new Date().toISOString());
+  }
+
+  async sendMonthlyGift() {
+    log.info('Sending monthly gift reminder');
+    
+    const gifts = getNotesForOwner(config.ownerId).filter(n => n.category === 'gift');
+    let giftText = '';
+    if (gifts.length > 0) {
+        const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
+        giftText = `\n\n🎁 Идея из вишлиста:\n"${randomGift.text}"`;
+    } else {
+        giftText = '\n\n🎁 (Ваш список идей для подарков пуст, добавьте что-нибудь!)';
+    }
+
+    const text = `🔔 Напоминание месяца: Время для подарка! 🎁\nДаже мелочь может поднять настроение на весь день.${giftText}`;
+    await this.trySend(text);
+    KV.set('last_gift_reminder_date', new Date().toISOString());
+  }
+
+  private async trySend(text: string) {
+    try {
+      await this.bot.telegram.sendMessage(config.ownerId, text);
+    } catch (err) {
+      log.error('Failed to send reminder', err);
+    }
+  }
+}

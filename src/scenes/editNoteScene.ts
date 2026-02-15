@@ -56,9 +56,23 @@ editNoteScene.action('edit_text', async (ctx) => {
 editNoteScene.action('delete_note', async (ctx) => {
   const state = ctx.scene.state as EditNoteSceneSession;
   if (state.noteId) {
+    const note = getNoteById(state.noteId);
     deleteNote(state.noteId);
     await ctx.answerCbQuery('Заметка удалена ✅');
     
+    if (note && ctx.state.user?.role === 'PARTNER') {
+      const { config } = await import('../config.js');
+      try {
+        await ctx.telegram.sendMessage(
+          config.ownerId,
+          `🔔 <b>Твоя половинка удалила желание:</b>\n\n🗑️ "${note.text}"`,
+          { parse_mode: 'HTML' }
+        );
+      } catch (e) {
+        console.error('Failed to send notification to owner', e);
+      }
+    }
+
     // Refresh notes list by triggering the command handler manually or just replying
     const user = ctx.state.user!;
     const role = user.role as 'OWNER' | 'PARTNER';
@@ -87,8 +101,22 @@ editNoteScene.on('text', async (ctx) => {
   }
 
   if (state.noteId) {
+    const oldNote = getNoteById(state.noteId);
     updateNote(state.noteId, newText);
     await ctx.reply('✅ Текст заметки обновлен!');
+
+    if (oldNote && ctx.state.user?.role === 'PARTNER') {
+      const { config } = await import('../config.js');
+      try {
+        await ctx.telegram.sendMessage(
+          config.ownerId,
+          `🔔 <b>Твоя половинка изменила желание:</b>\n\n🔴 Было: "${oldNote.text}"\n🟢 Стало: "${newText}"`,
+          { parse_mode: 'HTML' }
+        );
+      } catch (e) {
+        console.error('Failed to send notification to owner', e);
+      }
+    }
   }
   
   return ctx.scene.leave();

@@ -55,6 +55,19 @@ addWishScene.on('text', async (ctx) => {
   const user = ctx.state.user!;
   addNote(user.id, text, state.category);
   const role = user.role as 'OWNER' | 'PARTNER';
+
+  if (role === 'PARTNER') {
+    const { config } = await import('../config.js');
+    try {
+      await ctx.telegram.sendMessage(
+        config.ownerId,
+        `🔔 <b>Твоя половинка добавила новое желание:</b>\n\n📂 ${getCategoryName(state.category)}\n📝 "${text}"`,
+        { parse_mode: 'HTML' }
+      );
+    } catch (e) {
+      console.error('Failed to send notification to owner', e);
+    }
+  }
   
   await ctx.reply(`✅ Записано в категорию «${getCategoryName(state.category)}»!`, getCommandsKeyboard(role));
   return ctx.scene.leave();

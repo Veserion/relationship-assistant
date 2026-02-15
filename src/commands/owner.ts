@@ -1,7 +1,7 @@
 import type { Telegraf } from 'telegraf';
 import { roleGuard } from '../middleware/roleGuard.js';
 import { getDatesByOwner } from '../services/dateService.js';
-import { getNotesForOwner } from '../services/noteService.js';
+import { getNotesForOwner, CATEGORY_NAMES } from '../services/noteService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 
@@ -33,14 +33,30 @@ export async function handleMyDates(ctx: BotContext) {
 
 export async function handlePartnerWishes(ctx: BotContext) {
   const user = ctx.state.user!;
-  const notes = getNotesForOwner(user.id);
+  const notes = getNotesForOwner(user.id).slice(0, 50);
   if (!notes.length) {
     await ctx.reply('Пока твоя половинка ничего не добавила 💌');
     return;
   }
-  const list = notes
-    .slice(0, 20)
-    .map((n, i) => `${i + 1}. ${n.text}`)
-    .join('\n\n');
-  await ctx.reply(`💝 Что хочет твоя половинка:\n\n${list}`);
+
+  const grouped: Record<string, typeof notes> = {};
+  notes.forEach((note) => {
+    const cat = note.category || 'wish';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(note);
+  });
+
+  let message = '<b>💝 Что хочет твоя половинка:</b>\n\n';
+  let globalIndex = 1;
+
+  for (const [cat, items] of Object.entries(grouped)) {
+    message += `<b>${CATEGORY_NAMES[cat] || cat}</b>\n`;
+    items.forEach((note) => {
+      message += `${globalIndex}. ${note.text}\n`;
+      globalIndex++;
+    });
+    message += '\n';
+  }
+
+  await ctx.reply(message, { parse_mode: 'HTML' });
 }

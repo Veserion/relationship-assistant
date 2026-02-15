@@ -6,14 +6,14 @@ import { addWishScene } from './scenes/addWishScene.js';
 import { addDateScene } from './scenes/addDateScene.js';
 import { editNoteScene } from './scenes/editNoteScene.js';
 import { selectRoleScene } from './scenes/selectRoleScene.js';
+import { sendMessageScene } from './scenes/sendMessageScene.js';
 import { registerGlobalCommands } from './commands/global.js';
 import { registerPartnerCommands } from './commands/partner.js';
 import { registerOwnerCommands } from './commands/owner.js';
-import { initScheduler } from './scheduler/index.js';
 import { log } from './logger.js';
 import type { BotContext } from './types.js';
 
-const stage = new Scenes.Stage<BotContext>([addWishScene, addDateScene, selectRoleScene, editNoteScene]);
+const stage = new Scenes.Stage<BotContext>([addWishScene, addDateScene, selectRoleScene, editNoteScene, sendMessageScene]);
 
 function setupBotCommands(bot: Telegraf<BotContext>): void {
   bot.telegram.setMyCommands([
@@ -54,8 +54,6 @@ export function createBot(): Telegraf<BotContext> {
     });
     ctx.reply('Произошла ошибка. Попробуйте позже.').catch(() => {});
   });
-
-  initScheduler(bot);
 
   return bot;
 }

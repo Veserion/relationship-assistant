@@ -45,4 +45,6 @@ export function registerGlobalCommands(bot: Telegraf<BotContext>): void {
 
   bot.command('help', sendHelp);
   bot.hears(BTN.HELP, sendHelp);
+  
+  bot.hears(BTN.SEND_MESSAGE, (ctx) => ctx.scene.enter('SEND_MESSAGE'));
 }
