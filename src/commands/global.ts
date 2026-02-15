@@ -1,0 +1,48 @@
+import type { Telegraf } from 'telegraf';
+import { BTN, getCommandsKeyboard } from '../keyboard.js';
+import type { BotContext } from '../types.js';
+
+export async function sendStart(ctx: BotContext) {
+  if (ctx.state.pendingRoleSelection) {
+    return ctx.scene.enter('SELECT_ROLE');
+  }
+  const user = ctx.state.user;
+  const role = (user?.role ?? 'OWNER') as 'OWNER' | 'PARTNER';
+  const keyboard = getCommandsKeyboard(role);
+  await ctx.reply(
+    `👋 Привет! Я помогу вам с партнёром не забывать важное.\n\n` +
+      `📌 Вы: ${role === 'OWNER' ? 'организатор (даты и напоминания)' : 'вторая половинка (пожелания и идеи)'}\n\n` +
+      `Выберите действие на кнопках ниже 👇`,
+    keyboard
+  );
+}
+
+export async function sendHelp(ctx: BotContext) {
+  const user = ctx.state.user;
+  const role = user?.role;
+  let text = '📖 Справка\n\n';
+  text += '🛠 Общее:\n';
+  text += '• Главная — меню бота\n';
+  text += '• Помощь — эта справка\n\n';
+  if (role === 'PARTNER') {
+    text += '💝 Твои пожелания:\n';
+    text += '• Добавить пожелание — записать, что важно для тебя, подарок, идею\n';
+    text += '• Мои заметки — твои сохранённые пожелания\n';
+  }
+  if (role === 'OWNER') {
+    text += '📅 Даты для пары:\n';
+    text += '• Добавить дату — день рождения, годовщина, важное событие\n';
+    text += '• Мои даты — напоминания о важных датах\n\n';
+    text += '💌 От второй половинки:\n';
+    text += '• Пожелания партнёра — что хочет твоя половинка\n';
+  }
+  await ctx.reply(text);
+}
+
+export function registerGlobalCommands(bot: Telegraf<BotContext>): void {
+  bot.command('start', sendStart);
+  bot.hears(BTN.MAIN, sendStart);
+
+  bot.command('help', sendHelp);
+  bot.hears(BTN.HELP, sendHelp);
+}

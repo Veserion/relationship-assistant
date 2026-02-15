@@ -1,0 +1,46 @@
+import Database from 'better-sqlite3';
+
+export function initSchema(db: InstanceType<typeof Database>): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      telegram_id INTEGER UNIQUE NOT NULL,
+      role TEXT NOT NULL CHECK(role IN ('OWNER', 'PARTNER')),
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      text TEXT NOT NULL,
+      category TEXT NOT NULL CHECK(category IN ('wish', 'idea', 'preference', 'memory')) DEFAULT 'wish',
+      priority INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS important_dates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      date TEXT NOT NULL,
+      reminder_type TEXT NOT NULL CHECK(reminder_type IN ('yearly', 'once')) DEFAULT 'yearly',
+      remind_before_days INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (owner_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS reminder_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reminder_type TEXT NOT NULL,
+      reference_id INTEGER NOT NULL,
+      sent_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id);
+    CREATE INDEX IF NOT EXISTS idx_notes_created ON notes(created_at);
+    CREATE INDEX IF NOT EXISTS idx_dates_owner ON important_dates(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_dates_date ON important_dates(date);
+    CREATE INDEX IF NOT EXISTS idx_logs_reference ON reminder_logs(reference_id, reminder_type);
+  `);
+}
