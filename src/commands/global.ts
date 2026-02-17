@@ -47,4 +47,8 @@ export function registerGlobalCommands(bot: Telegraf<BotContext>): void {
   bot.hears(BTN.HELP, sendHelp);
   
   bot.hears(BTN.SEND_MESSAGE, (ctx) => ctx.scene.enter('SEND_MESSAGE'));
+
+  // ADD_DATE available for both
+  bot.command('date', (ctx) => ctx.scene.enter('ADD_DATE'));
+  bot.hears(BTN.ADD_DATE, (ctx) => ctx.scene.enter('ADD_DATE'));
 }

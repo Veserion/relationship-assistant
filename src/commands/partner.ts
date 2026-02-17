@@ -10,9 +10,6 @@ export function registerPartnerCommands(bot: Telegraf<BotContext>): void {
   bot.command('wish', partnerGuard, (ctx) => ctx.scene.enter('ADD_WISH'));
   bot.hears(BTN.ADD_WISH, partnerGuard, (ctx) => ctx.scene.enter('ADD_WISH'));
 
-  bot.command('date', partnerGuard, (ctx) => ctx.scene.enter('ADD_DATE'));
-  bot.hears(BTN.ADD_DATE, partnerGuard, (ctx) => ctx.scene.enter('ADD_DATE'));
-
   bot.command('my_notes', partnerGuard, handleMyNotes);
   bot.hears(BTN.MY_NOTES, partnerGuard, handleMyNotes);
 
