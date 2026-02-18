@@ -12,10 +12,6 @@ async function main(): Promise<void> {
     console.error('BOT_TOKEN is required. Copy .env.example to .env and fill it.');
     process.exit(1);
   }
-  if (isNaN(config.ownerId) || isNaN(config.partnerId)) {
-    console.error('OWNER_ID and PARTNER_ID must be valid Telegram user IDs.');
-    process.exit(1);
-  }
 
   const bot = createBot();
 

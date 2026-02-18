@@ -3,6 +3,7 @@ import { addNote } from '../services/noteService.js';
 import { getCommandsKeyboard } from '../keyboard.js';
 import { checkGlobalNavigation } from './utils.js';
 import type { BotContext } from '../types.js';
+import { getPartner } from '../services/userService.js';
 
 interface AddWishSceneSession {
   text?: string;
@@ -57,15 +58,17 @@ addWishScene.on('text', async (ctx) => {
   const role = user.role as 'OWNER' | 'PARTNER';
 
   if (role === 'PARTNER') {
-    const { config } = await import('../config.js');
-    try {
-      await ctx.telegram.sendMessage(
-        config.ownerId,
-        `🔔 <b>Твоя половинка добавила новое желание:</b>\n\n📂 ${getCategoryName(state.category)}\n📝 "${text}"`,
-        { parse_mode: 'HTML' }
-      );
-    } catch (e) {
-      console.error('Failed to send notification to owner', e);
+    const partner = getPartner(user.id);
+    if (partner) {
+      try {
+        await ctx.telegram.sendMessage(
+          partner.telegram_id,
+          `🔔 <b>Твоя половинка добавила новое желание:</b>\n\n📂 ${getCategoryName(state.category)}\n📝 "${text}"`,
+          { parse_mode: 'HTML' }
+        );
+      } catch (e) {
+        console.error('Failed to send notification to owner', e);
+      }
     }
   }
   

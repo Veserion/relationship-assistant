@@ -4,6 +4,7 @@ import { addImportantDate } from '../services/dateService.js';
 import { getCommandsKeyboard } from '../keyboard.js';
 import { log } from '../logger.js';
 import type { BotContext, AddDateSceneSession } from '../types.js';
+import { getPartner } from '../services/userService.js';
 
 const STAGES = {
   WAITING_TITLE: 'waiting_title',
@@ -109,14 +110,12 @@ addDateScene.on('text', async (ctx) => {
     let ownerId = currentUser.id;
     if (currentUser.role === 'PARTNER') {
       // If partner adds a date, it should be assigned to the owner so reminders work
-      const { config } = await import('../config.js');
-      const { getOrCreateOwner } = await import('../services/userService.js');
-      const ownerUser = getOrCreateOwner(config.ownerId);
-      if (ownerUser) {
-        ownerId = ownerUser.id;
+      const partner = getPartner(currentUser.id);
+      if (partner && partner.role === 'OWNER') {
+        ownerId = partner.id;
       } else {
         log.error('addDate: owner user not found for partner added date');
-        await ctx.reply('Ошибка: не удалось определить организатора. Обратитесь к администратору.');
+        await ctx.reply('Ошибка: не удалось определить организатора. Ваша пара полностью настроена?');
         return ctx.scene.leave();
       }
     }

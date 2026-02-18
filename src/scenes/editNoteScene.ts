@@ -2,6 +2,7 @@ import { Scenes } from 'telegraf';
 import { getNoteById, updateNote, deleteNote } from '../services/noteService.js';
 import { getCommandsKeyboard } from '../keyboard.js';
 import type { BotContext } from '../types.js';
+import { getPartner } from '../services/userService.js';
 
 interface EditNoteSceneSession {
   noteId?: number;
@@ -61,15 +62,17 @@ editNoteScene.action('delete_note', async (ctx) => {
     await ctx.answerCbQuery('Заметка удалена ✅');
     
     if (note && ctx.state.user?.role === 'PARTNER') {
-      const { config } = await import('../config.js');
-      try {
-        await ctx.telegram.sendMessage(
-          config.ownerId,
-          `🔔 <b>Твоя половинка удалила желание:</b>\n\n🗑️ "${note.text}"`,
-          { parse_mode: 'HTML' }
-        );
-      } catch (e) {
-        console.error('Failed to send notification to owner', e);
+      const partner = getPartner(ctx.state.user.id);
+      if (partner) {
+        try {
+          await ctx.telegram.sendMessage(
+            partner.telegram_id,
+            `🔔 <b>Твоя половинка удалила желание:</b>\n\n🗑️ "${note.text}"`,
+            { parse_mode: 'HTML' }
+          );
+        } catch (e) {
+          console.error('Failed to send notification to owner', e);
+        }
       }
     }
 
@@ -106,15 +109,17 @@ editNoteScene.on('text', async (ctx) => {
     await ctx.reply('✅ Текст заметки обновлен!');
 
     if (oldNote && ctx.state.user?.role === 'PARTNER') {
-      const { config } = await import('../config.js');
-      try {
-        await ctx.telegram.sendMessage(
-          config.ownerId,
-          `🔔 <b>Твоя половинка изменила желание:</b>\n\n🔴 Было: "${oldNote.text}"\n🟢 Стало: "${newText}"`,
-          { parse_mode: 'HTML' }
-        );
-      } catch (e) {
-        console.error('Failed to send notification to owner', e);
+      const partner = getPartner(ctx.state.user.id);
+      if (partner) {
+        try {
+          await ctx.telegram.sendMessage(
+            partner.telegram_id,
+            `🔔 <b>Твоя половинка изменила желание:</b>\n\n🔴 Было: "${oldNote.text}"\n🟢 Стало: "${newText}"`,
+            { parse_mode: 'HTML' }
+          );
+        } catch (e) {
+          console.error('Failed to send notification to owner', e);
+        }
       }
     }
   }
