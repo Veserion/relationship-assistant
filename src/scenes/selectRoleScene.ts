@@ -63,9 +63,16 @@ selectRoleScene.action(ROLE_PARTNER, async (ctx) => {
   ctx.state.user = user;
   ctx.state.pendingRoleSelection = undefined;
   await ctx.answerCbQuery();
+
+  const botInfo = await ctx.telegram.getMe();
+  const inviteLink = `https://t.me/${botInfo.username}?start=pair_${telegramId}`;
+
   const keyboard = getCommandsKeyboard('PARTNER');
   await ctx.reply(
-    '✅ Вы — партнёр. Добавляй пожелания — твоя половинка их увидит 💝',
+    '✅ Вы — партнёр. Добавляй пожелания — твоя половинка их увидит 💝\n\n' +
+    `🔗 Отправьте эту ссылку вашей половинке, чтобы связать аккаунты:\n` +
+    `${inviteLink}\n\n` +
+    `Когда партнёр перейдёт по ссылке, вы сможете обмениваться пожеланиями и видеть общие даты.`,
     { reply_markup: keyboard.reply_markup }
   );
   return ctx.scene.leave();

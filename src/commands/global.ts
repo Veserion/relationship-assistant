@@ -7,13 +7,20 @@ export async function sendStart(ctx: BotContext) {
   const payload = (ctx as any).payload; // Telegraf 4 command payload
 
   if (payload && payload.startsWith('pair_')) {
-    const ownerId = parseInt(payload.split('_')[1], 10);
-    if (!isNaN(ownerId) && ownerId !== ctx.from?.id) {
+    const inviterId = parseInt(payload.split('_')[1], 10);
+    const inviter = getUserByTelegramId(inviterId);
+    
+    if (inviter && inviter.telegram_id !== ctx.from?.id) {
       // User came via invite link
-      const user = ctx.state.user || createUserWithRole(ctx.from!.id, 'PARTNER');
+      const joinerRole = inviter.role === 'OWNER' ? 'PARTNER' : 'OWNER';
+      const user = ctx.state.user || createUserWithRole(ctx.from!.id, joinerRole);
+      
       try {
-        linkPair(ownerId, ctx.from!.id);
-        await ctx.reply('❤️ Вы успешно связали свой аккаунт со своей половинкой!');
+        const ownerTg = inviter.role === 'OWNER' ? inviter.telegram_id : user.telegram_id;
+        const partnerTg = inviter.role === 'OWNER' ? user.telegram_id : inviter.telegram_id;
+        
+        linkPair(ownerTg, partnerTg);
+        await ctx.reply(`❤️ Вы успешно связаны со своей половинкой! Ваша роль: ${joinerRole === 'OWNER' ? 'Организатор' : 'Партнёр'}`);
         ctx.state.user = user;
         ctx.state.pendingRoleSelection = undefined;
       } catch (err) {
