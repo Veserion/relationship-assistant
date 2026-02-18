@@ -1,8 +1,8 @@
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 import { sendStart, sendHelp } from '../commands/global.js';
-import { handleMyNotes } from '../commands/partner.js';
-import { handleDatesForPair, handlePartnerWishes } from '../commands/owner.js';
+import { handleMyNotes, handleOwnerWishlistForPartner } from '../commands/partner.js';
+import { handleDatesForPair, handlePartnerWishes, handleMyOwnerWishes } from '../commands/owner.js';
 
 export async function checkGlobalNavigation(ctx: BotContext, text: string): Promise<boolean> {
   const buttons = Object.values(BTN);
@@ -26,6 +26,11 @@ export async function checkGlobalNavigation(ctx: BotContext, text: string): Prom
           await handleMyNotes(ctx);
         }
         break;
+      case BTN.OWNER_WISHLIST:
+        if (ctx.state.user?.role === 'PARTNER') {
+          await handleOwnerWishlistForPartner(ctx);
+        }
+        break;
       case BTN.SEND_MESSAGE:
         await ctx.scene.enter('SEND_MESSAGE');
         break;
@@ -40,6 +45,16 @@ export async function checkGlobalNavigation(ctx: BotContext, text: string): Prom
       case BTN.PARTNER_WISHES:
         if (ctx.state.user?.role === 'OWNER') {
           await handlePartnerWishes(ctx);
+        }
+        break;
+      case BTN.ADD_OWNER_WISH:
+        if (ctx.state.user?.role === 'OWNER') {
+          await ctx.scene.enter('ADD_OWNER_WISH');
+        }
+        break;
+      case BTN.MY_OWNER_WISHES:
+        if (ctx.state.user?.role === 'OWNER') {
+          await handleMyOwnerWishes(ctx);
         }
         break;
       default:

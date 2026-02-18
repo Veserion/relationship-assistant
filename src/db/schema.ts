@@ -48,6 +48,14 @@ export function initSchema(db: InstanceType<typeof Database>): void {
       sent_at TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS owner_wishes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_id INTEGER NOT NULL,
+      text TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (owner_id) REFERENCES users(id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id);
     CREATE INDEX IF NOT EXISTS idx_notes_created ON notes(created_at);
     CREATE INDEX IF NOT EXISTS idx_dates_owner ON important_dates(owner_id);
@@ -55,6 +63,7 @@ export function initSchema(db: InstanceType<typeof Database>): void {
     CREATE INDEX IF NOT EXISTS idx_logs_reference ON reminder_logs(reference_id, reminder_type);
     CREATE INDEX IF NOT EXISTS idx_pairs_owner ON pairs(owner_id);
     CREATE INDEX IF NOT EXISTS idx_pairs_partner ON pairs(partner_id);
+    CREATE INDEX IF NOT EXISTS idx_owner_wishes_owner ON owner_wishes(owner_id);
 
     CREATE TABLE IF NOT EXISTS key_value (
       key TEXT PRIMARY KEY,

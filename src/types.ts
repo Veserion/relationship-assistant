@@ -28,6 +28,13 @@ export interface ImportantDate {
   created_at: string;
 }
 
+export interface OwnerWish {
+  id: number;
+  owner_id: number;
+  text: string;
+  created_at: string;
+}
+
 export interface BotState {
   user?: User;
   /** telegramId, если пользователь ещё не выбрал роль (не owner) */

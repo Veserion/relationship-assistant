@@ -7,6 +7,8 @@ import { addDateScene } from './scenes/addDateScene.js';
 import { editNoteScene } from './scenes/editNoteScene.js';
 import { selectRoleScene } from './scenes/selectRoleScene.js';
 import { sendMessageScene } from './scenes/sendMessageScene.js';
+import { addOwnerWishScene } from './scenes/addOwnerWishScene.js';
+import { editOwnerWishScene } from './scenes/editOwnerWishScene.js';
 import { registerGlobalCommands } from './commands/global.js';
 import { registerPartnerCommands } from './commands/partner.js';
 import { registerOwnerCommands } from './commands/owner.js';
@@ -17,7 +19,15 @@ import { ComplimentService } from './services/complimentService.js';
 import { KV } from './services/kvService.js';
 import { Markup } from 'telegraf';
 
-const stage = new Scenes.Stage<BotContext>([addWishScene, addDateScene, selectRoleScene, editNoteScene, sendMessageScene]);
+const stage = new Scenes.Stage<BotContext>([
+  addWishScene,
+  addDateScene,
+  selectRoleScene,
+  editNoteScene,
+  sendMessageScene,
+  addOwnerWishScene,
+  editOwnerWishScene,
+]);
 
 function setupBotCommands(bot: Telegraf<BotContext>): void {
   bot.telegram.setMyCommands([

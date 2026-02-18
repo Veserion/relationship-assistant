@@ -1,6 +1,8 @@
 import type { Telegraf } from 'telegraf';
 import { roleGuard } from '../middleware/roleGuard.js';
 import { getNotesByUser, CATEGORY_NAMES } from '../services/noteService.js';
+import { getOwnerWishes } from '../services/ownerWishService.js';
+import { getPartner } from '../services/userService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 
@@ -13,11 +15,30 @@ export function registerPartnerCommands(bot: Telegraf<BotContext>): void {
   bot.command('my_notes', partnerGuard, handleMyNotes);
   bot.hears(BTN.MY_NOTES, partnerGuard, handleMyNotes);
 
+  bot.command('owner_wishlist', partnerGuard, handleOwnerWishlistForPartner);
+  bot.hears(BTN.OWNER_WISHLIST, partnerGuard, handleOwnerWishlistForPartner);
+
   bot.action(/^edit_note_(\d+)$/, async (ctx) => {
     const noteId = parseInt(ctx.match[1], 10);
     await ctx.answerCbQuery();
     await ctx.scene.enter('EDIT_NOTE', { noteId });
   });
+}
+
+export async function handleOwnerWishlistForPartner(ctx: BotContext) {
+  const user = ctx.state.user!;
+  const owner = getPartner(user.id);
+  if (!owner) {
+    await ctx.reply('Пока нет связи с половинкой. Перейди по её ссылке — тогда здесь появится вишлист 📋');
+    return;
+  }
+  const wishes = getOwnerWishes(owner.id);
+  if (!wishes.length) {
+    await ctx.reply('Вишлист половинки пока пуст. Попроси её добавить хотелки — так проще выбирать подарки 💝');
+    return;
+  }
+  const list = wishes.map((w, i) => `${i + 1}. ${w.text}`).join('\n');
+  await ctx.reply(`📋 <b>Вишлист половинки</b>\n\n${list}`, { parse_mode: 'HTML' });
 }
 
 export async function handleMyNotes(ctx: BotContext) {

@@ -3,6 +3,7 @@ import { roleGuard } from '../middleware/roleGuard.js';
 import { getDatesByOwner } from '../services/dateService.js';
 import { getPartner } from '../services/userService.js';
 import { getNotesForOwner, CATEGORY_NAMES } from '../services/noteService.js';
+import { getOwnerWishes } from '../services/ownerWishService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 import { ComplimentService } from '../services/complimentService.js';
@@ -23,6 +24,44 @@ export function registerOwnerCommands(bot: Telegraf<BotContext>): void {
 
   bot.command('compliment', ownerGuard, handleCompliment);
   bot.hears(BTN.COMPLIMENTS, ownerGuard, handleCompliment);
+
+  bot.command('owner_wishes', ownerGuard, (ctx) => ctx.scene.enter('ADD_OWNER_WISH'));
+  bot.hears(BTN.ADD_OWNER_WISH, ownerGuard, (ctx) => ctx.scene.enter('ADD_OWNER_WISH'));
+  bot.hears(BTN.MY_OWNER_WISHES, ownerGuard, handleMyOwnerWishes);
+
+  bot.action(/^edit_owner_wish_(\d+)$/, async (ctx) => {
+    const wishId = parseInt(ctx.match[1], 10);
+    await ctx.answerCbQuery();
+    await ctx.scene.enter('EDIT_OWNER_WISH', { wishId });
+  });
+}
+
+export async function handleMyOwnerWishes(ctx: BotContext) {
+  const user = ctx.state.user!;
+  const wishes = getOwnerWishes(user.id);
+  if (!wishes.length) {
+    await ctx.reply('Вишлист пуст. Добавь первую хотелку — нажми «Добавить в вишлист» 📋');
+    return;
+  }
+
+  let message = '<b>📋 Мой вишлист:</b>\n\n';
+  const buttons: { text: string; callback_data: string }[][] = [];
+  let row: { text: string; callback_data: string }[] = [];
+
+  wishes.forEach((w, i) => {
+    message += `${i + 1}. ${w.text}\n`;
+    row.push({ text: `✏️ ${i + 1}`, callback_data: `edit_owner_wish_${w.id}` });
+    if (row.length >= 4) {
+      buttons.push([...row]);
+      row = [];
+    }
+  });
+  if (row.length > 0) buttons.push(row);
+
+  await ctx.reply(message, {
+    parse_mode: 'HTML',
+    reply_markup: { inline_keyboard: buttons },
+  });
 }
 
 /** Показывает общие даты пары: для OWNER — по своему id, для PARTNER — по id организатора */
