@@ -11,7 +11,32 @@ interface SendMessageSceneSession {
 export const sendMessageScene = new Scenes.BaseScene<BotContext>('SEND_MESSAGE');
 
 sendMessageScene.enter(async (ctx) => {
-  await ctx.reply('✍️ Напишите сообщение для вашей половинки:');
+  await ctx.reply(
+    '✍️ Напишите сообщение или отправьте стикер для вашей половинки:\n\n' +
+    'Можно отправить текст или любой стикер из своих наборов.'
+  );
+});
+
+sendMessageScene.on('sticker', async (ctx) => {
+  const currentUser = ctx.state.user!;
+  const partner = getPartner(currentUser.id);
+
+  if (!partner) {
+    await ctx.reply('⚠️ У вас пока не подключена вторая половинка. Отправьте ей ссылку для подключения!');
+    return ctx.scene.leave();
+  }
+
+  const fileId = ctx.message.sticker.file_id;
+  try {
+    await ctx.telegram.sendSticker(partner.telegram_id, fileId);
+    const senderName = ctx.from?.first_name ?? (currentUser.role === 'OWNER' ? 'Организатор' : 'Партнёр');
+    await ctx.telegram.sendMessage(partner.telegram_id, `💝 Стикер от ${senderName}`, { parse_mode: 'HTML' }).catch(() => {});
+    await ctx.reply('✅ Стикер отправлен!', getCommandsKeyboard(currentUser.role as 'OWNER' | 'PARTNER'));
+  } catch (err) {
+    console.error('Failed to send sticker:', err);
+    await ctx.reply('❌ Не удалось отправить. Возможно, половинка заблокировала бота.');
+  }
+  return ctx.scene.leave();
 });
 
 sendMessageScene.on('text', async (ctx) => {
@@ -60,5 +85,5 @@ sendMessageScene.on('text', async (ctx) => {
 });
 
 sendMessageScene.on('message', async (ctx) => {
-    await ctx.reply('Пожалуйста, отправьте текстовое сообщение.');
+  await ctx.reply('Отправьте, пожалуйста, текст или стикер.');
 });

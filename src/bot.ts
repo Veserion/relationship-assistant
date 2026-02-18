@@ -53,7 +53,7 @@ export function createBot(): Telegraf<BotContext> {
   registerGlobalCommands(bot);
   registerPartnerCommands(bot);
   registerOwnerCommands(bot);
-  
+
   // Compliment Actions
   bot.action('send_compliment', async (ctx) => {
     const telegramId = ctx.from!.id;
