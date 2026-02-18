@@ -2,8 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const COMPLIMENTS_PATH = join(__dirname, '..', 'data', 'compliments.json');
+const COMPLIMENTS_PATH = join(process.cwd(), 'data', 'compliments.json');
 
 interface ComplimentData {
   compliments: Record<string, string[]>;

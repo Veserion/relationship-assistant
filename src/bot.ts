@@ -90,7 +90,10 @@ export function createBot(): Telegraf<BotContext> {
         ])
       });
       await ctx.answerCbQuery();
-    } catch (err) {
+    } catch (err: any) {
+      if (err.description?.includes('message is not modified')) {
+        return ctx.answerCbQuery('Тот же вариант! Попробуй еще раз.');
+      }
       log.error('Failed to update compliment suggestion', err);
       await ctx.answerCbQuery('❌ Ошибка при обновлении.');
     }
