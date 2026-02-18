@@ -2,8 +2,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const COMPLIMENTS_PATH = join(process.cwd(), 'data', 'compliments.json');
-
 interface ComplimentData {
   compliments: Record<string, string[]>;
 }
@@ -12,10 +10,11 @@ export class ComplimentService {
   private static data: ComplimentData | null = null;
 
   private static loadData() {
+    const dir = fileURLToPath(new URL('.', import.meta.url));
     const pathsToTry = [
+      join(dir, '..', 'data', 'compliments.json'), // dist/services -> dist/data (при сборке data копируется в dist)
+      join(dir, '..', '..', 'data', 'compliments.json'), // dist/services -> корень проекта
       join(process.cwd(), 'data', 'compliments.json'),
-      join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', 'data', 'compliments.json'),
-      join(fileURLToPath(new URL('.', import.meta.url)), '..', 'data', 'compliments.json'),
     ];
 
     let lastError = '';
