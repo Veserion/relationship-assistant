@@ -2,6 +2,7 @@ import { Scenes } from 'telegraf';
 import { getCommandsKeyboard } from '../keyboard.js';
 import { checkGlobalNavigation } from './utils.js';
 import type { BotContext } from '../types.js';
+import { getPartner } from '../services/userService.js';
 
 interface SendMessageSceneSession {
   // empty for now, or maybe 'recipientId' if we had multiple
@@ -24,11 +25,14 @@ sendMessageScene.on('text', async (ctx) => {
 
   const currentUser = ctx.state.user!;
   
-  // Dynamic import config to avoid cycles if any
-  const { config } = await import('../config.js');
+  const partner = getPartner(currentUser.id);
   
-  const recipientId = currentUser.role === 'OWNER' ? config.partnerId : config.ownerId;
-  const senderRole = currentUser.role === 'OWNER' ? 'Владельца' : 'Партнёра';
+  if (!partner) {
+    await ctx.reply('⚠️ У вас пока не подключена вторая половинка. Отправьте ей ссылку для подключения!');
+    return ctx.scene.leave();
+  }
+
+  const recipientId = partner.telegram_id;
 
   console.log('Sending message:', {
     fromId: ctx.from.id,
