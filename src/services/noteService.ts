@@ -1,5 +1,6 @@
 import { getDb } from '../db/index.js';
 import type { Note } from '../types.js';
+import { encrypt, decrypt } from './encryptionService.js';
 
 export const CATEGORY_NAMES: Record<string, string> = {
   gift: '🎁 Подарки',
@@ -33,23 +34,26 @@ export function addNote(
   priority: number = 0
 ): number {
   const c = CATEGORIES.includes(category as NoteCategory) ? category : 'wish';
+  const encryptedText = encrypt(text);
   const db = getDb();
   const result = db.prepare(
     'INSERT INTO notes (user_id, text, category, priority) VALUES (?, ?, ?, ?)'
-  ).run(userId, text, c, priority);
+  ).run(userId, encryptedText, c, priority);
   return result.lastInsertRowid as number;
 }
 
 export function getNotesByUser(userId: number, limit: number = 50): Note[] {
   const db = getDb();
-  return db.prepare(
+  const notes = db.prepare(
     'SELECT * FROM notes WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'
   ).all(userId, limit) as Note[];
+  
+  return notes.map(n => ({ ...n, text: decrypt(n.text) }));
 }
 
 export function getNotesForOwner(ownerUserId: number, limit: number = 50): (Note & { telegram_id?: number })[] {
   const db = getDb();
-  return db.prepare(`
+  const notes = db.prepare(`
     SELECT n.*, u.telegram_id
     FROM notes n
     JOIN users u ON n.user_id = u.id
@@ -57,6 +61,8 @@ export function getNotesForOwner(ownerUserId: number, limit: number = 50): (Note
     ORDER BY n.created_at DESC
     LIMIT ?
   `).all(ownerUserId, limit) as (Note & { telegram_id?: number })[];
+
+  return notes.map(n => ({ ...n, text: decrypt(n.text) }));
 }
 
 export function getRandomNoteExcludingRecent(excludeLastIds: number[] = [], limit: number = 5): Note[] {
@@ -91,12 +97,17 @@ export function logReminder(reminderType: string, referenceId: number): void {
 
 export function getNoteById(id: number): Note | undefined {
   const db = getDb();
-  return db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as Note | undefined;
+  const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as Note | undefined;
+  if (note) {
+    note.text = decrypt(note.text);
+  }
+  return note;
 }
 
 export function updateNote(id: number, text: string): void {
   const db = getDb();
-  db.prepare('UPDATE notes SET text = ? WHERE id = ?').run(text, id);
+  const encryptedText = encrypt(text);
+  db.prepare('UPDATE notes SET text = ? WHERE id = ?').run(encryptedText, id);
 }
 
 export function deleteNote(id: number): void {

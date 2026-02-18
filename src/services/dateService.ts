@@ -1,5 +1,6 @@
 import { getDb } from '../db/index.js';
 import type { ImportantDate } from '../types.js';
+import { encrypt, decrypt } from './encryptionService.js';
 
 export function addImportantDate(
   ownerId: number,
@@ -9,18 +10,21 @@ export function addImportantDate(
   remindBeforeDays: number = 0
 ): number {
   const db = getDb();
+  const encryptedTitle = encrypt(title);
   const result = db.prepare(
     `INSERT INTO important_dates (owner_id, title, date, reminder_type, remind_before_days)
      VALUES (?, ?, ?, ?, ?)`
-  ).run(ownerId, title, date, reminderType, remindBeforeDays);
+  ).run(ownerId, encryptedTitle, date, reminderType, remindBeforeDays);
   return result.lastInsertRowid as number;
 }
 
 export function getDatesByOwner(ownerId: number): ImportantDate[] {
   const db = getDb();
-  return db.prepare(
+  const dates = db.prepare(
     'SELECT * FROM important_dates WHERE owner_id = ? ORDER BY date ASC'
   ).all(ownerId) as ImportantDate[];
+
+  return dates.map(d => ({ ...d, title: decrypt(d.title) }));
 }
 
 function formatDate(d: Date): string {
@@ -61,12 +65,15 @@ export function getDatesDueForReminderToday(ownerId: number): ImportantDate[] {
   const all = db.prepare('SELECT * FROM important_dates WHERE owner_id = ?').all(ownerId) as ImportantDate[];
   const due: ImportantDate[] = [];
   for (const d of all) {
+    const decryptedTitle = decrypt(d.title);
+    const dateCopy = { ...d, title: decryptedTitle };
+    
     if (d.reminder_type === 'once') {
       const target = d.date.slice(0, 10);
-      if (isDateDue(target, d.remind_before_days, todayStr)) due.push(d);
+      if (isDateDue(target, d.remind_before_days, todayStr)) due.push(dateCopy);
     } else {
       const targetMMDD = d.date.slice(5, 10);
-      if (isDateDueYearly(targetMMDD, d.remind_before_days, today, todayMMDD)) due.push(d);
+      if (isDateDueYearly(targetMMDD, d.remind_before_days, today, todayMMDD)) due.push(dateCopy);
     }
   }
   return due;
