@@ -4,7 +4,9 @@ import type { BotContext } from '../types.js';
 import { getUserByTelegramId, createUserWithRole, linkPair } from '../services/userService.js';
 
 export async function sendStart(ctx: BotContext) {
-  const payload = (ctx as any).payload; // Telegraf 4 command payload
+  // Deep link: t.me/bot?start=pair_123 → message.text = "/start pair_123"
+  const text = ctx.message && 'text' in ctx.message ? ctx.message.text : '';
+  const payload = text.startsWith('/start') ? text.replace(/^\/start\s*/, '').trim() : undefined;
 
   if (payload && payload.startsWith('pair_')) {
     const inviterId = parseInt(payload.split('_')[1], 10);
