@@ -38,10 +38,13 @@ export function createBot(): Telegraf<BotContext> {
   bot.use(whitelistMiddleware);
   bot.use(stage.middleware());
   bot.use(async (ctx, next) => {
-    if (ctx.state.pendingRoleSelection) {
-      return ctx.scene.enter('SELECT_ROLE');
+    if (!ctx.state.pendingRoleSelection) return next();
+    // Инвайт-ссылка: /start pair_123 — пусть обработает sendStart, он создаст юзера и снимет pendingRoleSelection
+    const text = ctx.message && 'text' in ctx.message ? ctx.message.text : '';
+    if (text.startsWith('/start ') && text.replace(/^\/start\s*/, '').trim().startsWith('pair_')) {
+      return next();
     }
-    return next();
+    return ctx.scene.enter('SELECT_ROLE');
   });
 
   setupBotCommands(bot);
