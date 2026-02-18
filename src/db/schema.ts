@@ -30,6 +30,17 @@ export function initSchema(db: InstanceType<typeof Database>): void {
       FOREIGN KEY (owner_id) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS pairs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_id INTEGER NOT NULL,
+      partner_id INTEGER,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(owner_id),
+      UNIQUE(partner_id),
+      FOREIGN KEY (owner_id) REFERENCES users(id),
+      FOREIGN KEY (partner_id) REFERENCES users(id)
+    );
+
     CREATE TABLE IF NOT EXISTS reminder_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       reminder_type TEXT NOT NULL,
@@ -42,6 +53,8 @@ export function initSchema(db: InstanceType<typeof Database>): void {
     CREATE INDEX IF NOT EXISTS idx_dates_owner ON important_dates(owner_id);
     CREATE INDEX IF NOT EXISTS idx_dates_date ON important_dates(date);
     CREATE INDEX IF NOT EXISTS idx_logs_reference ON reminder_logs(reference_id, reminder_type);
+    CREATE INDEX IF NOT EXISTS idx_pairs_owner ON pairs(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_pairs_partner ON pairs(partner_id);
 
     CREATE TABLE IF NOT EXISTS key_value (
       key TEXT PRIMARY KEY,

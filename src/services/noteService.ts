@@ -53,7 +53,7 @@ export function getNotesForOwner(ownerUserId: number, limit: number = 50): (Note
     SELECT n.*, u.telegram_id
     FROM notes n
     JOIN users u ON n.user_id = u.id
-    WHERE u.id != ?
+    JOIN pairs p ON (p.owner_id = ? AND p.partner_id = u.id)
     ORDER BY n.created_at DESC
     LIMIT ?
   `).all(ownerUserId, limit) as (Note & { telegram_id?: number })[];

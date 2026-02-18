@@ -1,13 +1,35 @@
 import type { Telegraf } from 'telegraf';
 import { BTN, getCommandsKeyboard } from '../keyboard.js';
 import type { BotContext } from '../types.js';
+import { getUserByTelegramId, createUserWithRole, linkPair } from '../services/userService.js';
 
 export async function sendStart(ctx: BotContext) {
+  const payload = (ctx as any).payload; // Telegraf 4 command payload
+
+  if (payload && payload.startsWith('pair_')) {
+    const ownerId = parseInt(payload.split('_')[1], 10);
+    if (!isNaN(ownerId) && ownerId !== ctx.from?.id) {
+      // User came via invite link
+      const user = ctx.state.user || createUserWithRole(ctx.from!.id, 'PARTNER');
+      try {
+        linkPair(ownerId, ctx.from!.id);
+        await ctx.reply('❤️ Вы успешно связали свой аккаунт со своей половинкой!');
+        ctx.state.user = user;
+        ctx.state.pendingRoleSelection = undefined;
+      } catch (err) {
+        console.error('Failed to link pair:', err);
+      }
+    }
+  }
+
   if (ctx.state.pendingRoleSelection) {
     return ctx.scene.enter('SELECT_ROLE');
   }
+
   const user = ctx.state.user;
-  const role = (user?.role ?? 'OWNER') as 'OWNER' | 'PARTNER';
+  if (!user) return ctx.scene.enter('SELECT_ROLE');
+
+  const role = user.role as 'OWNER' | 'PARTNER';
   const keyboard = getCommandsKeyboard(role);
   await ctx.reply(
     `👋 Привет! Я помогу вам с партнёром не забывать важное.\n\n` +

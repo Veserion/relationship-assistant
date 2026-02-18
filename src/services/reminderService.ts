@@ -1,6 +1,7 @@
 import { config } from '../config.js';
 import { createBot } from '../bot.js'; // We might need a singleton bot instance or pass it in
 import { getNotesForOwner, getNotesByUser } from './noteService.js';
+import { getDatesDueForReminderToday } from './dateService.js';
 import { log } from '../logger.js';
 import { KV } from './kvService.js';
 import { Telegraf } from 'telegraf';
@@ -20,13 +21,9 @@ export class ReminderService {
     this.bot = bot;
   }
 
-  async sendDailyCompliment() {
-    log.info('Sending daily compliment reminder');
-    // Logic: Just remind the owner to say something nice.
-    // Optionally: fetch a random "wish" from partner if category='attention' or 'wish'
-    // But user asked for "Reminder about nice words".
+  async sendDailyCompliment(ownerId: number, targetTelegramId: number) {
+    log.info(`Sending daily compliment reminder to ${targetTelegramId}`);
     
-    // We can vary the message slightly so it's not boring
     const messages = [
       '🔔 Напоминание: Напиши что-нибудь приятное своей половинке прямо сейчас! 🥰',
       '🔔 Время для нежностей! Отправь милое сообщение или позвони.',
@@ -35,22 +32,20 @@ export class ReminderService {
     ];
     const text = messages[Math.floor(Math.random() * messages.length)];
     
-    await this.trySend(text);
-    KV.set('last_compliment_date', new Date().toISOString().split('T')[0]);
+    await this.trySend(targetTelegramId, text);
   }
 
-  async sendWeeklyAttention() {
-    log.info('Sending weekly attention reminder');
+  async sendWeeklyAttention(ownerId: number, targetTelegramId: number) {
+    log.info(`Sending weekly attention reminder to ${targetTelegramId}`);
     const text = '🔔 Напоминание недели: Удели время качественному вниманию! \nМожет быть, маленький сюрприз или просто долгий разговор по душам? ✨';
-    await this.trySend(text);
-    KV.set('last_weekly_attention_date', new Date().toISOString());
+    await this.trySend(targetTelegramId, text);
   }
 
-  async sendBiWeeklyDate() {
-    log.info('Sending bi-weekly date reminder');
+  async sendBiWeeklyDate(ownerId: number, targetTelegramId: number) {
+    log.info(`Sending bi-weekly date reminder to ${targetTelegramId}`);
     
-    // Try to get idea from DB
-    const ideas = getNotesForOwner(config.ownerId).filter(n => n.category === 'date_idea');
+    // ownerId is the DB ID of the user
+    const ideas = getNotesForOwner(ownerId).filter(n => n.category === 'date_idea');
     let ideaText = '';
     if (ideas.length > 0) {
       const randomIdea = ideas[Math.floor(Math.random() * ideas.length)];
@@ -60,14 +55,13 @@ export class ReminderService {
     }
 
     const text = `🔔 Напоминание: Пора на свидание! 🍷\nПопробуйте организовать что-то особенное на этих выходных.${ideaText}`;
-    await this.trySend(text);
-    KV.set('last_date_reminder_date', new Date().toISOString());
+    await this.trySend(targetTelegramId, text);
   }
 
-  async sendMonthlyGift() {
-    log.info('Sending monthly gift reminder');
+  async sendMonthlyGift(ownerId: number, targetTelegramId: number) {
+    log.info(`Sending monthly gift reminder to ${targetTelegramId}`);
     
-    const gifts = getNotesForOwner(config.ownerId).filter(n => n.category === 'gift');
+    const gifts = getNotesForOwner(ownerId).filter(n => n.category === 'gift');
     let giftText = '';
     if (gifts.length > 0) {
         const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
@@ -77,15 +71,24 @@ export class ReminderService {
     }
 
     const text = `🔔 Напоминание месяца: Время для подарка! 🎁\nДаже мелочь может поднять настроение на весь день.${giftText}`;
-    await this.trySend(text);
-    KV.set('last_gift_reminder_date', new Date().toISOString());
+    await this.trySend(targetTelegramId, text);
   }
 
-  private async trySend(text: string) {
+  async checkImportantDates(ownerId: number, targetTelegramId: number) {
+    const dueDates = getDatesDueForReminderToday(ownerId);
+    if (dueDates.length === 0) return;
+
+    for (const d of dueDates) {
+      const text = `🔔 Приближается важное событие: <b>${d.title}</b>! (${d.date})\nОсталось совсем немного времени, чтобы подготовиться! 🎁`;
+      await this.trySend(targetTelegramId, text);
+    }
+  }
+
+  private async trySend(telegramId: number, text: string) {
     try {
-      await this.bot.telegram.sendMessage(config.ownerId, text);
+      await this.bot.telegram.sendMessage(telegramId, text);
     } catch (err) {
-      log.error('Failed to send reminder', err);
+      log.error(`Failed to send reminder to ${telegramId}`, err);
     }
   }
 }
