@@ -1,6 +1,7 @@
 import type { Telegraf } from 'telegraf';
 import { roleGuard } from '../middleware/roleGuard.js';
 import { getDatesByOwner } from '../services/dateService.js';
+import { getPartner } from '../services/userService.js';
 import { getNotesForOwner, CATEGORY_NAMES } from '../services/noteService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
@@ -14,8 +15,8 @@ export function registerOwnerCommands(bot: Telegraf<BotContext>): void {
   bot.command('date', ownerGuard, (ctx) => ctx.scene.enter('ADD_DATE'));
   bot.hears(BTN.ADD_DATE, ownerGuard, (ctx) => ctx.scene.enter('ADD_DATE'));
 
-  bot.command('dates', ownerGuard, handleMyDates);
-  bot.hears(BTN.MY_DATES, ownerGuard, handleMyDates);
+  bot.command('dates', handleDatesForPair);
+  bot.hears(BTN.MY_DATES, handleDatesForPair);
 
   bot.command('wishes', ownerGuard, handlePartnerWishes);
   bot.hears(BTN.PARTNER_WISHES, ownerGuard, handlePartnerWishes);
@@ -24,11 +25,23 @@ export function registerOwnerCommands(bot: Telegraf<BotContext>): void {
   bot.hears(BTN.COMPLIMENTS, ownerGuard, handleCompliment);
 }
 
-export async function handleMyDates(ctx: BotContext) {
+/** Показывает общие даты пары: для OWNER — по своему id, для PARTNER — по id организатора */
+export async function handleDatesForPair(ctx: BotContext) {
   const user = ctx.state.user!;
-  const dates = getDatesByOwner(user.id);
+  const ownerId = user.role === 'OWNER'
+    ? user.id
+    : getPartner(user.id)?.id;
+  if (ownerId == null) {
+    await ctx.reply('Пока нет общих дат. Подключите половинку по ссылке — тогда здесь появятся даты 📅');
+    return;
+  }
+  const dates = getDatesByOwner(ownerId);
   if (!dates.length) {
-    await ctx.reply('Пока нет дат. Добавь годовщину, день рождения или другой важный день 📅');
+    await ctx.reply(
+      user.role === 'OWNER'
+        ? 'Пока нет дат. Добавь годовщину, день рождения или другой важный день 📅'
+        : 'Пока нет общих дат. Организатор может добавить их в разделе «Добавить дату» 📅'
+    );
     return;
   }
   const list = dates

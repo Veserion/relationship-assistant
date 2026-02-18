@@ -25,6 +25,6 @@ export function getCommandsKeyboard(role: 'OWNER' | 'PARTNER') {
   return Markup.keyboard([
     [BTN.MAIN, BTN.HELP],
     [BTN.ADD_WISH, BTN.MY_NOTES],
-    [BTN.ADD_DATE, BTN.SEND_MESSAGE],
+    [BTN.ADD_DATE, BTN.MY_DATES, BTN.SEND_MESSAGE],
   ]).resize();
 }

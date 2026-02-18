@@ -2,7 +2,7 @@ import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
 import { sendStart, sendHelp } from '../commands/global.js';
 import { handleMyNotes } from '../commands/partner.js';
-import { handleMyDates, handlePartnerWishes } from '../commands/owner.js';
+import { handleDatesForPair, handlePartnerWishes } from '../commands/owner.js';
 
 export async function checkGlobalNavigation(ctx: BotContext, text: string): Promise<boolean> {
   const buttons = Object.values(BTN);
@@ -33,8 +33,8 @@ export async function checkGlobalNavigation(ctx: BotContext, text: string): Prom
         await ctx.scene.enter('ADD_DATE');
         break;
       case BTN.MY_DATES:
-        if (ctx.state.user?.role === 'OWNER') {
-          await handleMyDates(ctx);
+        if (ctx.state.user) {
+          await handleDatesForPair(ctx);
         }
         break;
       case BTN.PARTNER_WISHES:
