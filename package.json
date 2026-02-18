@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "predev": "npm run embed-compliments",
     "dev": "tsx watch src/index.ts",
-    "db:reset": "tsx scripts/reset-db.ts"
+    "db:reset": "tsx scripts/reset-db.ts",
+    "prepare": "husky"
   },
   "keywords": [
     "telegram",
@@ -29,6 +30,7 @@
     "telegraf-calendar-telegram": "^2.0.2"
   },
   "devDependencies": {
+    "husky": "^9.0.11",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^22.10.1",
     "@types/node-cron": "^3.0.11",

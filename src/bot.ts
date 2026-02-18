@@ -40,8 +40,8 @@ export function createBot(): Telegraf<BotContext> {
   bot.use(async (ctx, next) => {
     if (!ctx.state.pendingRoleSelection) return next();
     // Инвайт-ссылка: /start pair_123 — не показывать выбор роли, пусть обработает sendStart
-    const msg = ctx.update?.message ?? ctx.message;
-    const text = typeof msg?.text === 'string' ? msg.text : '';
+    const msg = 'message' in ctx.update ? ctx.update.message : ctx.message;
+    const text = msg && 'text' in msg && typeof msg.text === 'string' ? msg.text : '';
     const payload = text.startsWith('/start') ? text.replace(/^\/start\s*/, '').trim() : '';
     if (payload.startsWith('pair_')) {
       return next();
