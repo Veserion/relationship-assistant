@@ -43,7 +43,7 @@ sendMessageScene.on('text', async (ctx) => {
     
     await ctx.telegram.sendMessage(
         recipientId, 
-        `📩 <b>Сообщение от ${senderName}:</b>\n\n${text}`, 
+        `📩 <b>Сообщение от ${senderName}:</b>\n\n<tg-spoiler>${text}</tg-spoiler>`, 
         { parse_mode: 'HTML' }
     );
     await ctx.reply('✅ Сообщение отправлено!', getCommandsKeyboard(currentUser.role));
