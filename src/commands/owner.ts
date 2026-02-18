@@ -4,6 +4,9 @@ import { getDatesByOwner } from '../services/dateService.js';
 import { getNotesForOwner, CATEGORY_NAMES } from '../services/noteService.js';
 import { BTN } from '../keyboard.js';
 import type { BotContext } from '../types.js';
+import { ComplimentService } from '../services/complimentService.js';
+import { KV } from '../services/kvService.js';
+import { Markup } from 'telegraf';
 
 const ownerGuard = roleGuard('OWNER');
 
@@ -16,6 +19,9 @@ export function registerOwnerCommands(bot: Telegraf<BotContext>): void {
 
   bot.command('wishes', ownerGuard, handlePartnerWishes);
   bot.hears(BTN.PARTNER_WISHES, ownerGuard, handlePartnerWishes);
+
+  bot.command('compliment', ownerGuard, handleCompliment);
+  bot.hears(BTN.COMPLIMENTS, ownerGuard, handleCompliment);
 }
 
 export async function handleMyDates(ctx: BotContext) {
@@ -59,4 +65,22 @@ export async function handlePartnerWishes(ctx: BotContext) {
   }
 
   await ctx.reply(message, { parse_mode: 'HTML' });
+}
+
+export async function handleCompliment(ctx: BotContext) {
+  const telegramId = ctx.from!.id;
+  const compliment = ComplimentService.getRandomCompliment();
+  KV.set(`pending_compliment_${telegramId}`, compliment);
+
+  const text = `🎭 Порадуй любимого человека прямо сейчас!\n\n` +
+               `💡 Предлагаемый вариант (нажми, чтобы скопировать):\n` +
+               `<code>${compliment}</code>`;
+
+  await ctx.reply(text, {
+    parse_mode: 'HTML',
+    ...Markup.inlineKeyboard([
+      [Markup.button.callback('🚀 Отправить', 'send_compliment')],
+      [Markup.button.callback('🔄 Выдать новый вариант', 'new_compliment')]
+    ])
+  });
 }
