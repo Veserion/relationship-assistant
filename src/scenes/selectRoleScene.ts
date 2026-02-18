@@ -42,7 +42,7 @@ selectRoleScene.action(ROLE_OWNER, async (ctx) => {
   const botInfo = await ctx.telegram.getMe();
   const inviteLink = `https://t.me/${botInfo.username}?start=pair_${telegramId}`;
   
-  const keyboard = getCommandsKeyboard('OWNER');
+  const keyboard = getCommandsKeyboard('OWNER', false);
   await ctx.reply(
     `✅ Вы — организатор!\n\n` +
     `👋 Я помогу вам не забывать важное для вас двоих: даты, идеи и пожелания половинки.\n\n` +
@@ -79,7 +79,7 @@ selectRoleScene.action(ROLE_PARTNER, async (ctx) => {
   const botInfo = await ctx.telegram.getMe();
   const inviteLink = `https://t.me/${botInfo.username}?start=pair_${telegramId}`;
 
-  const keyboard = getCommandsKeyboard('PARTNER');
+  const keyboard = getCommandsKeyboard('PARTNER', false);
   await ctx.reply(
     `✅ Вы — партнёр!\n\n` +
     `👋 Я помогу вам делиться с половинкой тем, что важно: пожелания, идеи подарков, планы.\n\n` +

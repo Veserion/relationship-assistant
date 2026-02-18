@@ -57,6 +57,9 @@ export async function checkGlobalNavigation(ctx: BotContext, text: string): Prom
           await handleMyOwnerWishes(ctx);
         }
         break;
+      case BTN.RESET_ROLE:
+        await ctx.scene.enter('SELECT_ROLE');
+        break;
       default:
         // Generic fallback if new buttons are added without handlers
         break;

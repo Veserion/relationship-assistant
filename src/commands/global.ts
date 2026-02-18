@@ -1,7 +1,7 @@
 import type { Telegraf } from 'telegraf';
 import { BTN, getCommandsKeyboard } from '../keyboard.js';
 import type { BotContext } from '../types.js';
-import { getUserByTelegramId, createUserWithRole, linkPair } from '../services/userService.js';
+import { getUserByTelegramId, createUserWithRole, linkPair, getPartner } from '../services/userService.js';
 
 export async function sendStart(ctx: BotContext) {
   // Deep link: t.me/bot?start=pair_123 → message.text = "/start pair_123"
@@ -51,7 +51,8 @@ export async function sendStart(ctx: BotContext) {
   if (!user) return ctx.scene.enter('SELECT_ROLE');
 
   const role = user.role as 'OWNER' | 'PARTNER';
-  const keyboard = getCommandsKeyboard(role);
+  const hasPartner = !!getPartner(user.id);
+  const keyboard = getCommandsKeyboard(role, hasPartner);
   await ctx.reply(
     `👋 Привет! Я помогу вам с партнёром не забывать важное.\n\n` +
       `📌 Вы: ${role === 'OWNER' ? 'организатор (даты и напоминания)' : 'вторая половинка (пожелания и идеи)'}\n\n` +
@@ -67,7 +68,8 @@ export async function sendHelp(ctx: BotContext) {
   text += '🛠 Общее:\n';
   text += '• Главная — меню бота\n';
   text += '• Помощь — эта справка\n';
-  text += '• Написать — отправить половинке сообщение или стикер\n\n';
+  text += '• Написать — отправить половинке сообщение или стикер\n';
+  text += '• Сбросить роль — если ошиблись с выбором (пока пара не привязана)\n\n';
   if (role === 'PARTNER') {
     text += '💝 Твои пожелания:\n';
     text += '• Добавить пожелание — записать, что важно для тебя, подарок, идею\n';
@@ -96,6 +98,15 @@ export function registerGlobalCommands(bot: Telegraf<BotContext>): void {
   bot.hears(BTN.HELP, sendHelp);
   
   bot.hears(BTN.SEND_MESSAGE, (ctx) => ctx.scene.enter('SEND_MESSAGE'));
+  bot.hears(BTN.RESET_ROLE, async (ctx) => {
+    const user = ctx.state.user;
+    if (!user) return ctx.scene.enter('SELECT_ROLE');
+    if (getPartner(user.id)) {
+      await ctx.reply('Сброс роли доступен только пока пара не привязана. У вас уже есть половинка.');
+      return;
+    }
+    return ctx.scene.enter('SELECT_ROLE');
+  });
 
   // ADD_DATE available for both
   bot.command('date', (ctx) => ctx.scene.enter('ADD_DATE'));
