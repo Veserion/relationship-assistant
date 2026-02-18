@@ -22,9 +22,16 @@ export async function sendStart(ctx: BotContext) {
         const partnerTg = inviter.role === 'OWNER' ? user.telegram_id : inviter.telegram_id;
         
         linkPair(ownerTg, partnerTg);
-        await ctx.reply(`❤️ Вы успешно связаны со своей половинкой! Ваша роль: ${joinerRole === 'OWNER' ? 'Организатор' : 'Партнёр'}`);
         ctx.state.user = user;
         ctx.state.pendingRoleSelection = undefined;
+        const roleLabel = joinerRole === 'OWNER' ? 'Организатор' : 'Партнёр';
+        const keyboard = getCommandsKeyboard(joinerRole as 'OWNER' | 'PARTNER');
+        await ctx.reply(
+          `❤️ Вы успешно связаны со своей половинкой! Ваша роль: ${roleLabel}\n\n` +
+            `👋 Выберите действие на кнопках ниже 👇`,
+          keyboard
+        );
+        return;
       } catch (err) {
         console.error('Failed to link pair:', err);
       }
