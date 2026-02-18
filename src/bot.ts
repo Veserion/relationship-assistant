@@ -18,6 +18,7 @@ import { getUserByTelegramId, getPartner } from './services/userService.js';
 import { ComplimentService } from './services/complimentService.js';
 import { KV } from './services/kvService.js';
 import { Markup } from 'telegraf';
+import { DEFAULT_COMMANDS } from './commandsMenu.js';
 
 const stage = new Scenes.Stage<BotContext>([
   addWishScene,
@@ -29,16 +30,9 @@ const stage = new Scenes.Stage<BotContext>([
   editOwnerWishScene,
 ]);
 
+/** Команды по умолчанию для всех (до выбора роли) */
 function setupBotCommands(bot: Telegraf<BotContext>): void {
-  bot.telegram.setMyCommands([
-    { command: 'start', description: '🏠 Главная' },
-    { command: 'help', description: '❓ Помощь' },
-    { command: 'wish', description: '💝 Добавить пожелание' },
-    { command: 'my_notes', description: '📝 Мои заметки' },
-    { command: 'date', description: '📅 Добавить дату' },
-    { command: 'dates', description: '📆 Мои даты' },
-    { command: 'wishes', description: '💌 От второй половинки' },
-  ]);
+  bot.telegram.setMyCommands(DEFAULT_COMMANDS);
 }
 
 export function createBot(): Telegraf<BotContext> {

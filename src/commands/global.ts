@@ -1,5 +1,6 @@
 import type { Telegraf } from 'telegraf';
 import { BTN, getCommandsKeyboard } from '../keyboard.js';
+import { setCommandsForChat } from '../commandsMenu.js';
 import type { BotContext } from '../types.js';
 import { getUserByTelegramId, createUserWithRole, linkPair, getPartner } from '../services/userService.js';
 
@@ -29,6 +30,7 @@ export async function sendStart(ctx: BotContext) {
         const roleIntro = joinerRole === 'OWNER'
           ? 'Вы можете добавлять даты и напоминания, смотреть пожелания партнёра и отправлять комплименты.'
           : 'Вы можете добавлять пожелания и идеи — ваша половинка их увидит; также доступны общие даты пары.';
+        await setCommandsForChat(ctx, joinerRole as 'OWNER' | 'PARTNER');
         await ctx.reply(
           `❤️ Вы успешно связаны со своей половинкой! Ваша роль: ${roleLabel}\n\n` +
             `👋 ${roleIntro}\n\n` +
@@ -53,6 +55,7 @@ export async function sendStart(ctx: BotContext) {
   const role = user.role as 'OWNER' | 'PARTNER';
   const hasPartner = !!getPartner(user.id);
   const keyboard = getCommandsKeyboard(role, hasPartner);
+  await setCommandsForChat(ctx, role);
   await ctx.reply(
     `👋 Привет! Я помогу вам с партнёром не забывать важное.\n\n` +
       `📌 Вы: ${role === 'OWNER' ? 'организатор (даты и напоминания)' : 'вторая половинка (пожелания и идеи)'}\n\n` +

@@ -1,6 +1,7 @@
 import { Scenes } from 'telegraf';
 import { createUserWithRole } from '../services/userService.js';
 import { getCommandsKeyboard } from '../keyboard.js';
+import { setCommandsForChat } from '../commandsMenu.js';
 import { log } from '../logger.js';
 import type { BotContext } from '../types.js';
 
@@ -43,6 +44,7 @@ selectRoleScene.action(ROLE_OWNER, async (ctx) => {
   const inviteLink = `https://t.me/${botInfo.username}?start=pair_${telegramId}`;
   
   const keyboard = getCommandsKeyboard('OWNER', false);
+  await setCommandsForChat(ctx, 'OWNER');
   await ctx.reply(
     `✅ Вы — организатор!\n\n` +
     `👋 Я помогу вам не забывать важное для вас двоих: даты, идеи и пожелания половинки.\n\n` +
@@ -80,6 +82,7 @@ selectRoleScene.action(ROLE_PARTNER, async (ctx) => {
   const inviteLink = `https://t.me/${botInfo.username}?start=pair_${telegramId}`;
 
   const keyboard = getCommandsKeyboard('PARTNER', false);
+  await setCommandsForChat(ctx, 'PARTNER');
   await ctx.reply(
     `✅ Вы — партнёр!\n\n` +
     `👋 Я помогу вам делиться с половинкой тем, что важно: пожелания, идеи подарков, планы.\n\n` +
