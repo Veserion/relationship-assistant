@@ -12,6 +12,10 @@ import { registerPartnerCommands } from './commands/partner.js';
 import { registerOwnerCommands } from './commands/owner.js';
 import { log } from './logger.js';
 import type { BotContext } from './types.js';
+import { getUserByTelegramId, getPartner } from './services/userService.js';
+import { ComplimentService } from './services/complimentService.js';
+import { KV } from './services/kvService.js';
+import { Markup } from 'telegraf';
 
 const stage = new Scenes.Stage<BotContext>([addWishScene, addDateScene, selectRoleScene, editNoteScene, sendMessageScene]);
 
@@ -44,6 +48,53 @@ export function createBot(): Telegraf<BotContext> {
   registerGlobalCommands(bot);
   registerPartnerCommands(bot);
   registerOwnerCommands(bot);
+  
+  // Compliment Actions
+  bot.action('send_compliment', async (ctx) => {
+    const telegramId = ctx.from!.id;
+    const text = KV.get(`pending_compliment_${telegramId}`);
+    const user = ctx.state.user;
+    
+    if (!text) return ctx.answerCbQuery('⚠️ Срок действия предложения истек или произошла ошибка.');
+    if (!user) return ctx.answerCbQuery('Ошибка: пользователь не найден.');
+    
+    const partner = getPartner(user.id);
+    if (!partner) return ctx.answerCbQuery('⚠️ У вас пока не подключена вторая половинка.');
+    
+    try {
+      await ctx.telegram.sendMessage(partner.telegram_id, `❤️ <b>Твоя половинка прислала тебе комплимент:</b>\n\n"${text}"`, { parse_mode: 'HTML' });
+      KV.delete(`pending_compliment_${telegramId}`);
+      await ctx.answerCbQuery('✅ Отправлено!');
+      await ctx.editMessageText(`✅ Комплимент отправлен вашей половинке!\n\n<i>"${text}"</i>`, { parse_mode: 'HTML' });
+    } catch (err) {
+      log.error('Failed to send compliment to partner', err);
+      await ctx.answerCbQuery('❌ Ошибка при отправке.');
+    }
+  });
+
+  bot.action('new_compliment', async (ctx) => {
+    const telegramId = ctx.from!.id;
+    const compliment = ComplimentService.getRandomCompliment();
+    KV.set(`pending_compliment_${telegramId}`, compliment);
+
+    const text = `🔔 Напоминание: Самое время порадовать любимого человека!\n\n` +
+                 `💡 Предлагаемый вариант (нажми, чтобы скопировать):\n` +
+                 `<code>${compliment}</code>`;
+    
+    try {
+      await ctx.editMessageText(text, {
+        parse_mode: 'HTML',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('🚀 Отправить', 'send_compliment')],
+          [Markup.button.callback('🔄 Выдать новый вариант', 'new_compliment')]
+        ])
+      });
+      await ctx.answerCbQuery();
+    } catch (err) {
+      log.error('Failed to update compliment suggestion', err);
+      await ctx.answerCbQuery('❌ Ошибка при обновлении.');
+    }
+  });
 
   bot.catch((err, ctx) => {
     log.error('Unhandled error', err);

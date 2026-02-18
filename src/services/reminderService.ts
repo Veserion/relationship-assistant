@@ -4,8 +4,9 @@ import { getNotesForOwner, getNotesByUser } from './noteService.js';
 import { getDatesDueForReminderToday } from './dateService.js';
 import { log } from '../logger.js';
 import { KV } from './kvService.js';
-import { Telegraf } from 'telegraf';
+import { Telegraf, Markup } from 'telegraf';
 import type { BotContext } from '../types.js';
+import { ComplimentService } from './complimentService.js';
 
 // We need a way to send messages. 
 // Since `createBot` returns a new instance, we should probably modify `bot.ts` to export a singleton 
@@ -24,15 +25,24 @@ export class ReminderService {
   async sendDailyCompliment(ownerId: number, targetTelegramId: number) {
     log.info(`Sending daily compliment reminder to ${targetTelegramId}`);
     
-    const messages = [
-      '🔔 Напоминание: Напиши что-нибудь приятное своей половинке прямо сейчас! 🥰',
-      '🔔 Время для нежностей! Отправь милое сообщение или позвони.',
-      '🔔 Маленькое напоминание: твоя половинка будет рада твоему вниманию ❤️',
-      '🔔 Как насчет комплимента? Самое время порадовать любимого человека!',
-    ];
-    const text = messages[Math.floor(Math.random() * messages.length)];
+    const compliment = ComplimentService.getRandomCompliment();
+    KV.set(`pending_compliment_${targetTelegramId}`, compliment);
+
+    const text = `🔔 Напоминание: Самое время порадовать любимого человека!\n\n` +
+                 `💡 Предлагаемый вариант (нажми, чтобы скопировать):\n` +
+                 `<code>${compliment}</code>`;
     
-    await this.trySend(targetTelegramId, text);
+    try {
+      await this.bot.telegram.sendMessage(targetTelegramId, text, {
+        parse_mode: 'HTML',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('🚀 Отправить', 'send_compliment')],
+          [Markup.button.callback('🔄 Выдать новый вариант', 'new_compliment')]
+        ])
+      });
+    } catch (err) {
+      log.error(`Failed to send compliment reminder to ${targetTelegramId}`, err);
+    }
   }
 
   async sendWeeklyAttention(ownerId: number, targetTelegramId: number) {
