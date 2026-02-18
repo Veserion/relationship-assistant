@@ -1,6 +1,8 @@
 node_modules/
 .env
 data/*.db
+data/*.db-shm
+data/*.db-wal
 data/relationship_bot.db
 dist/
 src/data/complimentsData.generated.ts
