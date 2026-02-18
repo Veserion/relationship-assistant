@@ -10,6 +10,12 @@ export const selectRoleScene = new Scenes.BaseScene<BotContext>('SELECT_ROLE');
 const ROLE_OWNER = 'role:OWNER';
 const ROLE_PARTNER = 'role:PARTNER';
 
+const WELCOME_GUIDE =
+  `Привет! 👋\n\n` +
+  `Я — бот для пары: помогаю не забывать важное и держать всё в одном месте.\n\n` +
+  `Здесь можно вести общие даты (др, годовщины), напоминать друг другу о знаках внимания и подарках, обмениваться пожеланиями и идеями. Один в паре ведёт календарь и напоминания, второй — добавляет свои хотелки и заметки; вы оба видите общее и можете писать друг другу через бота.\n\n` +
+  `Чтобы начать, выбери, кто ты в паре 👇`;
+
 selectRoleScene.enter(async (ctx) => {
   const state = ctx.scene.state as { rolePromptSentAt?: number };
   if (state.rolePromptSentAt && Date.now() - state.rolePromptSentAt < 3000) {
@@ -22,6 +28,14 @@ selectRoleScene.enter(async (ctx) => {
     log.warn('selectRole: no telegramId');
     return ctx.scene.leave();
   }
+
+  const msg = 'message' in ctx.update ? ctx.update.message : null;
+  const text = msg && 'text' in msg && typeof msg.text === 'string' ? msg.text.trim() : '';
+  const isFirstEntry = /^\/start\s*$/.test(text);
+  if (isFirstEntry) {
+    await ctx.reply(WELCOME_GUIDE);
+  }
+
   await ctx.reply('👫 Кто вы в паре?', {
     reply_markup: {
       inline_keyboard: [
