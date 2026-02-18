@@ -1,7 +1,9 @@
 node_modules/
 .env
-data/
+data/*.db
+data/relationship_bot.db
 dist/
+src/data/complimentsData.generated.ts
 *.db
 *.log
 .DS_Store
