@@ -13,6 +13,7 @@
     "db:reset": "tsx scripts/reset-db.ts",
     "reset-role": "tsx scripts/reset-role.ts",
     "count-pairs": "tsx scripts/count-pairs.ts",
+    "delete-pair": "tsx scripts/delete-pair.ts",
     "prepare": "husky"
   },
   "keywords": [
