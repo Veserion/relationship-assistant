@@ -32,11 +32,12 @@ selectRoleScene.enter(async (ctx) => {
   const msg = 'message' in ctx.update ? ctx.update.message : null;
   const text = msg && 'text' in msg && typeof msg.text === 'string' ? msg.text.trim() : '';
   const isFirstEntry = /^\/start\s*$/.test(text);
-  if (isFirstEntry) {
-    await ctx.reply(WELCOME_GUIDE);
-  }
 
-  await ctx.reply('👫 Кто вы в паре?', {
+  const questionText = '👫 Кто вы в паре?';
+  const finalMessageText = isFirstEntry ? `${WELCOME_GUIDE}\n\n${questionText}` : questionText;
+
+  await ctx.reply(finalMessageText, {
+    parse_mode: isFirstEntry ? 'HTML' : undefined,
     reply_markup: {
       inline_keyboard: [
         [{ text: '👨 Парень', callback_data: ROLE_OWNER }],

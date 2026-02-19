@@ -43,13 +43,16 @@ export function createBot(): Telegraf<BotContext> {
   bot.use(stage.middleware());
   bot.use(async (ctx, next) => {
     if (!ctx.state.pendingRoleSelection) return next();
-    // Инвайт-ссылка: /start pair_123 — не показывать выбор роли, пусть обработает sendStart
+    
     const msg = 'message' in ctx.update ? ctx.update.message : ctx.message;
     const text = msg && 'text' in msg && typeof msg.text === 'string' ? msg.text : '';
-    const payload = text.startsWith('/start') ? text.replace(/^\/start\s*/, '').trim() : '';
-    if (payload.startsWith('pair_')) {
+    
+    // Если это команда /start (в т.ч. с параметрами), даем ей пройти в глобальные обработчики.
+    // Это предотвращает двойной вход в сцену выбора роли.
+    if (text.startsWith('/start')) {
       return next();
     }
+    
     return ctx.scene.enter('SELECT_ROLE');
   });
 
