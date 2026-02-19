@@ -63,7 +63,7 @@ addWishScene.on('text', async (ctx) => {
       try {
         await ctx.telegram.sendMessage(
           partner.telegram_id,
-          `🔔 <b>Твоя половинка добавила новое желание:</b>\n\n📂 ${getCategoryName(state.category)}\n📝 "${text}"`,
+          `🔔 <b>Твоя девушка добавила новое желание:</b>\n\n📂 ${getCategoryName(state.category)}\n📝 "${text}"`,
           { parse_mode: 'HTML' }
         );
       } catch (e) {

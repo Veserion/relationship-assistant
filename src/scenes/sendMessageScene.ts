@@ -19,7 +19,7 @@ export const sendMessageScene = new Scenes.BaseScene<BotContext>('SEND_MESSAGE')
 
 sendMessageScene.enter(async (ctx) => {
   await ctx.reply(
-    '✍️ Напишите сообщение или отправьте стикер для вашей половинки:\n\n' +
+    '✍️ Напиши сообщение или отправь стикер для своей половинки:\n\n' +
     'Можно отправить текст или любой стикер из своих наборов.'
   );
 });
@@ -29,19 +29,21 @@ sendMessageScene.on('sticker', async (ctx) => {
   const partner = getPartner(currentUser.id);
 
   if (!partner) {
-    await ctx.reply('⚠️ У вас пока не подключена вторая половинка. Отправьте ей ссылку для подключения!');
+    const partnerLabel = currentUser.role === 'OWNER' ? 'девушка' : 'парень';
+    const linkLabel = currentUser.role === 'OWNER' ? 'ей' : 'ему';
+    await ctx.reply(`⚠️ У тебя пока не подключена ${partnerLabel}. Отправь ${linkLabel} ссылку для подключения!`);
     return ctx.scene.leave();
   }
 
   const fileId = ctx.message.sticker.file_id;
   try {
     await ctx.telegram.sendSticker(partner.telegram_id, fileId);
-    const senderName = ctx.from?.first_name ?? (currentUser.role === 'OWNER' ? 'Организатор' : 'Партнёр');
+    const senderName = ctx.from?.first_name ?? (currentUser.role === 'OWNER' ? 'Парень' : 'Девушка');
     await ctx.telegram.sendMessage(partner.telegram_id, `💝 Стикер от ${senderName}`, { parse_mode: 'HTML' }).catch(() => {});
     await ctx.reply('✅ Стикер отправлен!', getCommandsKeyboard(currentUser.role as 'OWNER' | 'PARTNER'));
   } catch (err) {
     console.error('Failed to send sticker:', err);
-    await ctx.reply('❌ Не удалось отправить. Возможно, половинка заблокировала бота.');
+    await ctx.reply('❌ Не удалось отправить. Возможно, твоя половинка заблокировала бота.');
   }
   return ctx.scene.leave();
 });
@@ -65,7 +67,7 @@ sendMessageScene.on('text', async (ctx) => {
   }
 
   const recipientId = partner.telegram_id;
-  const senderName = ctx.from.first_name || (currentUser.role === 'OWNER' ? 'Владелец' : 'Партнёр');
+  const senderName = ctx.from.first_name || (currentUser.role === 'OWNER' ? 'Парень' : 'Девушка');
 
   const hasCustomEmoji = ctx.message.entities?.some(
     (e: { type?: string }) => e.type === 'custom_emoji'

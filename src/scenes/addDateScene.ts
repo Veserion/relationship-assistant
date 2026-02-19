@@ -115,7 +115,7 @@ addDateScene.on('text', async (ctx) => {
         ownerId = partner.id;
       } else {
         log.error('addDate: owner user not found for partner added date');
-        await ctx.reply('Ошибка: не удалось определить организатора. Ваша пара полностью настроена?');
+        await ctx.reply('Ошибка: не удалось определить парня. Ваша пара полностью настроена?');
         return ctx.scene.leave();
       }
     }

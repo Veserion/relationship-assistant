@@ -67,7 +67,7 @@ editNoteScene.action('delete_note', async (ctx) => {
         try {
           await ctx.telegram.sendMessage(
             partner.telegram_id,
-            `🔔 <b>Твоя половинка удалила желание:</b>\n\n🗑️ "${note.text}"`,
+            `🔔 <b>Твоя девушка удалила желание:</b>\n\n🗑️ "${note.text}"`,
             { parse_mode: 'HTML' }
           );
         } catch (e) {
@@ -114,7 +114,7 @@ editNoteScene.on('text', async (ctx) => {
         try {
           await ctx.telegram.sendMessage(
             partner.telegram_id,
-            `🔔 <b>Твоя половинка изменила желание:</b>\n\n🔴 Было: "${oldNote.text}"\n🟢 Стало: "${newText}"`,
+            `🔔 <b>Твоя девушка изменила желание:</b>\n\n🔴 Было: "${oldNote.text}"\n🟢 Стало: "${newText}"`,
             { parse_mode: 'HTML' }
           );
         } catch (e) {

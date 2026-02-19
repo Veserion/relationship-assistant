@@ -2,17 +2,17 @@ import type { BotContext } from './types.js';
 
 type BotCommand = { command: string; description: string };
 
-/** Команды в меню бота для организатора (соответствуют плашкам) */
+/** Команды в меню бота для парня (соответствуют плашкам) */
 export const OWNER_COMMANDS: BotCommand[] = [
   { command: 'start', description: '🏠 Главная' },
   { command: 'help', description: '❓ Помощь' },
   { command: 'date', description: '📅 Добавить дату' },
   { command: 'dates', description: '📆 Мои даты' },
-  { command: 'wishes', description: '💌 От второй половинки' },
+  { command: 'wishes', description: '💌 Пожелания девушки' },
   { command: 'compliment', description: '🎭 Комплимент' },
 ];
 
-/** Команды в меню бота для партнёра (соответствуют плашкам) */
+/** Команды в меню бота для девушки (соответствуют плашкам) */
 export const PARTNER_COMMANDS: BotCommand[] = [
   { command: 'start', description: '🏠 Главная' },
   { command: 'help', description: '❓ Помощь' },
@@ -20,7 +20,7 @@ export const PARTNER_COMMANDS: BotCommand[] = [
   { command: 'my_notes', description: '📝 Мои заметки' },
   { command: 'date', description: '📅 Добавить дату' },
   { command: 'dates', description: '📆 Мои даты' },
-  { command: 'owner_wishlist', description: '📋 Вишлист половинки' },
+  { command: 'owner_wishlist', description: '📋 Вишлист парня' },
 ];
 
 /** Команды по умолчанию (до выбора роли) */

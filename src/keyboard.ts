@@ -8,12 +8,12 @@ export const BTN = {
   MY_NOTES: '📝 Мои заметки',
   ADD_DATE: '📅 Добавить дату',
   MY_DATES: '📆 Мои даты',
-  PARTNER_WISHES: '💌 От второй половинки',
+  PARTNER_WISHES: '💌 Пожелания девушки',
   SEND_MESSAGE: '✉️ Написать',
   COMPLIMENTS: '🎭 Комплимент',
   ADD_OWNER_WISH: '📋 Добавить в вишлист',
   MY_OWNER_WISHES: '📋 Мой вишлист',
-  OWNER_WISHLIST: '📋 Вишлист половинки',
+  OWNER_WISHLIST: '📋 Вишлист парня',
   RESET_ROLE: '🔄 Сбросить роль',
 } as const;
 

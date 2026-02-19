@@ -29,16 +29,16 @@ export async function handleOwnerWishlistForPartner(ctx: BotContext) {
   const user = ctx.state.user!;
   const owner = getPartner(user.id);
   if (!owner) {
-    await ctx.reply('Пока нет связи с половинкой. Перейди по её ссылке — тогда здесь появится вишлист 📋');
+    await ctx.reply('Пока нет связи с парнем. Перейди по его ссылке — тогда здесь появится вишлист 📋');
     return;
   }
   const wishes = getOwnerWishes(owner.id);
   if (!wishes.length) {
-    await ctx.reply('Вишлист половинки пока пуст. Попроси её добавить хотелки — так проще выбирать подарки 💝');
+    await ctx.reply('Вишлист парня пока пуст. Попроси его добавить хотелки — так проще выбирать подарки 💝');
     return;
   }
   const list = wishes.map((w, i) => `${i + 1}. ${w.text}`).join('\n');
-  await ctx.reply(`📋 <b>Вишлист половинки</b>\n\n${list}`, { parse_mode: 'HTML' });
+  await ctx.reply(`📋 <b>Вишлист парня</b>\n\n${list}`, { parse_mode: 'HTML' });
 }
 
 export async function handleMyNotes(ctx: BotContext) {
@@ -46,7 +46,7 @@ export async function handleMyNotes(ctx: BotContext) {
   const notes = getNotesByUser(user.id);
   
   if (!notes.length) {
-    await ctx.reply('Пока пусто. Добавь первое пожелание — твоя половинка будет рада 💝');
+    await ctx.reply('Пока пусто. Добавь первое пожелание — твой парень будет рад 💝');
     return;
   }
 

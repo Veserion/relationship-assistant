@@ -68,13 +68,13 @@ export function createBot(): Telegraf<BotContext> {
     if (!user) return ctx.answerCbQuery('Ошибка: пользователь не найден.');
     
     const partner = getPartner(user.id);
-    if (!partner) return ctx.answerCbQuery('⚠️ У вас пока не подключена вторая половинка.');
+    if (!partner) return ctx.answerCbQuery('⚠️ У тебя пока не подключена девушка.');
     
     try {
-      await ctx.telegram.sendMessage(partner.telegram_id, `❤️ <b>Твоя половинка прислала тебе комплимент:</b>\n\n"${text}"`, { parse_mode: 'HTML' });
+      await ctx.telegram.sendMessage(partner.telegram_id, `❤️ <b>Твой парень прислал тебе комплимент:</b>\n\n"${text}"`, { parse_mode: 'HTML' });
       KV.delete(`pending_compliment_${telegramId}`);
       await ctx.answerCbQuery('✅ Отправлено!');
-      await ctx.editMessageText(`✅ Комплимент отправлен вашей половинке!\n\n<i>"${text}"</i>`, { parse_mode: 'HTML' });
+      await ctx.editMessageText(`✅ Комплимент отправлен твоей девушке!\n\n<i>"${text}"</i>`, { parse_mode: 'HTML' });
     } catch (err) {
       log.error('Failed to send compliment to partner', err);
       await ctx.answerCbQuery('❌ Ошибка при отправке.');
@@ -86,7 +86,7 @@ export function createBot(): Telegraf<BotContext> {
     const compliment = ComplimentService.getRandomCompliment();
     KV.set(`pending_compliment_${telegramId}`, compliment);
 
-    const text = `🔔 Напоминание: Самое время порадовать любимого человека!\n\n` +
+    const text = `🔔 Напоминание: Самое время порадовать свою девушку! ✨\n\n` +
                  `💡 Предлагаемый вариант (нажми, чтобы скопировать):\n` +
                  `<code>${compliment}</code>`;
     

@@ -21,7 +21,7 @@ addOwnerWishScene.on('text', async (ctx) => {
 
   const user = ctx.state.user!;
   if (user.role !== 'OWNER') {
-    await ctx.reply('Эта функция только для организатора.');
+    await ctx.reply('Эта функция только для парня.');
     return ctx.scene.leave();
   }
 

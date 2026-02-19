@@ -65,7 +65,7 @@ async function runRandomReminder(): Promise<void> {
     for (const owner of owners) {
         await botInstance.telegram.sendMessage(
           owner.telegram_id,
-          `💌 Твоя половинка написала: «${note.text}»`
+          `💌 Твоя девушка написала: «${note.text}»`
         );
     }
     logReminder('random_note', note.id);

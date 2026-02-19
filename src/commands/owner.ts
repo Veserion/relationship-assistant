@@ -64,14 +64,15 @@ export async function handleMyOwnerWishes(ctx: BotContext) {
   });
 }
 
-/** Показывает общие даты пары: для OWNER — по своему id, для PARTNER — по id организатора */
+/** Показывает общие даты пары: для OWNER — по своему id, для PARTNER — по id парня */
 export async function handleDatesForPair(ctx: BotContext) {
   const user = ctx.state.user!;
   const ownerId = user.role === 'OWNER'
     ? user.id
     : getPartner(user.id)?.id;
   if (ownerId == null) {
-    await ctx.reply('Пока нет общих дат. Подключите половинку по ссылке — тогда здесь появятся даты 📅');
+    const partnerLabel = user.role === 'OWNER' ? 'девушку' : 'парня';
+    await ctx.reply(`Пока нет общих дат. Подключи ${partnerLabel} по ссылке — тогда здесь появятся даты 📅`);
     return;
   }
   const dates = getDatesByOwner(ownerId);
@@ -79,7 +80,7 @@ export async function handleDatesForPair(ctx: BotContext) {
     await ctx.reply(
       user.role === 'OWNER'
         ? 'Пока нет дат. Добавь годовщину, день рождения или другой важный день 📅'
-        : 'Пока нет общих дат. Организатор может добавить их в разделе «Добавить дату» 📅'
+        : 'Пока нет общих дат. Твой парень может добавить их в разделе «Добавить дату» 📅'
     );
     return;
   }
@@ -93,7 +94,7 @@ export async function handlePartnerWishes(ctx: BotContext) {
   const user = ctx.state.user!;
   const notes = getNotesForOwner(user.id).slice(0, 50);
   if (!notes.length) {
-    await ctx.reply('Пока твоя половинка ничего не добавила 💌');
+    await ctx.reply('Пока твоя девушка ничего не добавила 💌');
     return;
   }
 
@@ -104,7 +105,7 @@ export async function handlePartnerWishes(ctx: BotContext) {
     grouped[cat].push(note);
   });
 
-  let message = '<b>💝 Что хочет твоя половинка:</b>\n\n';
+  let message = '<b>💝 Что хочет твоя девушка:</b>\n\n';
   let globalIndex = 1;
 
   for (const [cat, items] of Object.entries(grouped)) {
@@ -124,7 +125,7 @@ export async function handleCompliment(ctx: BotContext) {
   const compliment = ComplimentService.getRandomCompliment();
   KV.set(`pending_compliment_${telegramId}`, compliment);
 
-  const text = `🎭 Порадуй любимого человека прямо сейчас!\n\n` +
+  const text = `🎭 Порадуй свою девушку прямо сейчас!\n\n` +
                `💡 Предлагаемый вариант (нажми, чтобы скопировать):\n` +
                `<code>${compliment}</code>`;
 
